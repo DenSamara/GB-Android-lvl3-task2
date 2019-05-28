@@ -29,7 +29,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private MyTextWatcher textWatcher;
     private boolean isSubscribed;
 
-    @SuppressLint("CheckResult")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -37,6 +36,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         textView = findViewById(R.id.label);
         editText = findViewById(R.id.text);
+        editText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                EventType2 event = new EventType2(hasFocus ? EventType2.Hasfocus : EventType2.Lostfocus);
+                BusManager.getInstance().getBus()
+                        .send(event);
+            }
+        });
+
         btSubscribe = findViewById(R.id.subscribe);
         btUnsubscribe = findViewById(R.id.unsubscribe);
 
@@ -51,50 +59,40 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         };
 
-        BusManager.getInstance().getBus().toObservable().subscribe(new Consumer<Object>() {
-            @Override
-            public void accept(Object o) throws Exception {
-                Events event = (Events)o;
-                switch (event.getEventsType()){
-                    case Events.Subscribe:
-                        subscribe();
-                        break;
-                    case Events.Unsubscribe:
-                        unsubscribe();
-                        break;
-                }
-                enableButton(isSubscribed);
-            }
-        });
+        //Подписываться на EventBus нужно только один раз, при создании активити
+        if (savedInstanceState == null) {
+            subscribeToBus();
+        }
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        BusManager.getInstance().getBus().send(new Events(Events.Subscribe));
+        //TODO всегда подписываемся. Не корректно обрабатывается поворот
+        BusManager.getInstance().getBus().send(new EventType1(EventType1.Subscribe));
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        BusManager.getInstance().getBus().send(new Events(Events.Unsubscribe));
+        BusManager.getInstance().getBus().send(new EventType1(EventType1.Unsubscribe));
     }
 
     @Override
     public void onClick(View v) {
-        switch (v.getId()){
+        switch (v.getId()) {
             case R.id.subscribe:
                 BusManager.getInstance().getBus()
-                        .send(new Events(Events.Subscribe));
+                        .send(new EventType1(EventType1.Subscribe));
                 break;
             case R.id.unsubscribe:
                 BusManager.getInstance().getBus()
-                        .send(new Events(Events.Unsubscribe));
+                        .send(new EventType1(EventType1.Unsubscribe));
                 break;
         }
     }
 
-    private void subscribe(){
+    private void subscribe() {
         isSubscribed = true;
 
         Observable observable = Observable.create(observableOnSubscribe)
@@ -120,15 +118,55 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         observable.subscribe(observer);
     }
 
-    private void unsubscribe(){
+    private void unsubscribe() {
         isSubscribed = false;
         observer.dispose();
 
         editText.removeTextChangedListener(textWatcher);
     }
 
-    private void enableButton(boolean value){
+    private void enableButton(boolean value) {
         btSubscribe.setEnabled(!value);
         btUnsubscribe.setEnabled(value);
+    }
+
+    @SuppressLint("CheckResult")
+    private void subscribeToBus(){
+        BusManager.getInstance().getBus().toObservable().subscribe(new Consumer<Object>() {
+            @Override
+            public void accept(Object o) throws Exception {
+                EventBase event = (EventBase) o;
+                switch (event.getEventsType()) {
+                    case EventBase.Subscribe:
+                        subscribe();
+                        break;
+                    case EventBase.Unsubscribe:
+                        unsubscribe();
+                        break;
+                    default:
+                        GlobalProc.logE(TAG, "Subscription 1. EventsType: " + event.getEventsType());
+                        break;
+                }
+                enableButton(isSubscribed);
+            }
+        });
+
+        BusManager.getInstance().getBus().toObservable().subscribe(new Consumer<Object>() {
+            @Override
+            public void accept(Object o) throws Exception {
+                EventBase event = (EventBase) o;
+                switch (event.getEventsType()) {
+                    case EventBase.Hasfocus:
+                        GlobalProc.logE(TAG, "Has focus");
+                        break;
+                    case EventBase.Lostfocus:
+                        GlobalProc.logE(TAG, "Lost focus");
+                        break;
+                    default:
+                        GlobalProc.logE(TAG, "Subscription 2. EventsType: " + event.getEventsType());
+                        break;
+                }
+            }
+        });
     }
 }
