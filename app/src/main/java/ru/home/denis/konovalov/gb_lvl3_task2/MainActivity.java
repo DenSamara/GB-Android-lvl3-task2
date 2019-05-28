@@ -1,5 +1,6 @@
 package ru.home.denis.konovalov.gb_lvl3_task2;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatButton;
@@ -28,6 +29,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private MyTextWatcher textWatcher;
     private boolean isSubscribed;
 
+    @SuppressLint("CheckResult")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -69,13 +71,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onStart() {
         super.onStart();
-        subscribe();
+        BusManager.getInstance().getBus().send(new Events(Events.Subscribe));
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        unsubscribe();
+        BusManager.getInstance().getBus().send(new Events(Events.Unsubscribe));
     }
 
     @Override
@@ -83,16 +85,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (v.getId()){
             case R.id.subscribe:
                 BusManager.getInstance().getBus()
-                        .send(new Events(Events.Subscribe, v));
-//                subscribe();
+                        .send(new Events(Events.Subscribe));
                 break;
             case R.id.unsubscribe:
                 BusManager.getInstance().getBus()
-                        .send(new Events(Events.Unsubscribe, v));
-//                unsubscribe();
+                        .send(new Events(Events.Unsubscribe));
                 break;
         }
-//        enableButton(isSubscribed);
     }
 
     private void subscribe(){

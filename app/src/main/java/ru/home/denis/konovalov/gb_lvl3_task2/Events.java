@@ -10,18 +10,12 @@ public class Events {
     public static final byte Unsubscribe = 1;
 
     private @EventsType int eventsType;
-    private View view;
 
-    public Events(@EventsType int eventsType, View v){
+    public Events(@EventsType int eventsType){
         this.eventsType = eventsType;
-        view = v;
     }
 
     public @EventsType int getEventsType(){
         return eventsType;
-    }
-
-    public View getView(){
-        return view;
     }
 }
