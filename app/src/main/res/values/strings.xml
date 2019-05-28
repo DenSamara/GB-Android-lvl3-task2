@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">GB-lvl3-task2</string>
+    <string name="subscribe">Подписаться</string>
+    <string name="unsubscribe">Отписаться</string>
 </resources>
