@@ -2,13 +2,9 @@ package ru.home.denis.konovalov.gb_lvl3_task2;
 
 import android.support.annotation.IntDef;
 
-import io.reactivex.Observable;
-import io.reactivex.Observer;
-import io.reactivex.Single;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.observers.DisposableObserver;
-import io.reactivex.observers.DisposableSingleObserver;
 import io.reactivex.subjects.PublishSubject;
 
 //TODO Шина должна слать сообщения о подписке/отписке
