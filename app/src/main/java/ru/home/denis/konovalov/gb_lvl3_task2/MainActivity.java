@@ -11,6 +11,7 @@ import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.functions.Consumer;
 import io.reactivex.observers.DisposableObserver;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
@@ -21,7 +22,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private AppCompatButton btSubscribe;
     private AppCompatButton btUnsubscribe;
 
-    private Observable observable;
     private DisposableObserver<String> observer;
     private ObservableOnSubscribe<String> observableOnSubscribe;
 
@@ -48,13 +48,28 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 editText.addTextChangedListener(textWatcher);
             }
         };
+
+        BusManager.getInstance().getBus().toObservable().subscribe(new Consumer<Object>() {
+            @Override
+            public void accept(Object o) throws Exception {
+                Events event = (Events)o;
+                switch (event.getEventsType()){
+                    case Events.Subscribe:
+                        subscribe();
+                        break;
+                    case Events.Unsubscribe:
+                        unsubscribe();
+                        break;
+                }
+                enableButton(isSubscribed);
+            }
+        });
     }
 
     @Override
     protected void onStart() {
         super.onStart();
         subscribe();
-        enableButton(isSubscribed);
     }
 
     @Override
@@ -67,19 +82,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.subscribe:
-                subscribe();
+                BusManager.getInstance().getBus()
+                        .send(new Events(Events.Subscribe, v));
+//                subscribe();
                 break;
             case R.id.unsubscribe:
-                unsubscribe();
+                BusManager.getInstance().getBus()
+                        .send(new Events(Events.Unsubscribe, v));
+//                unsubscribe();
                 break;
         }
-        enableButton(isSubscribed);
+//        enableButton(isSubscribed);
     }
 
     private void subscribe(){
         isSubscribed = true;
 
-        observable = Observable.create(observableOnSubscribe)
+        Observable observable = Observable.create(observableOnSubscribe)
                 .observeOn(AndroidSchedulers.mainThread());
 
         observer = new DisposableObserver<String>() {
