@@ -59,14 +59,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onStart() {
         super.onStart();
-        //TODO всегда подписываемся. Не корректно обрабатывается поворот
-        BusManager.getInstance().getBus().send(new EventType1(EventType1.Subscribe));
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        BusManager.getInstance().getBus().send(new EventType1(EventType1.Unsubscribe));
     }
 
     @Override
