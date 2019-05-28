@@ -82,13 +82,13 @@ public class MainActivity extends AppCompatActivity {
 
             }
         };
+
+        observable.subscribe(observer);
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-
-        observable.subscribe(observer);
     }
 
     @Override
